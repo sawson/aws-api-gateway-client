@@ -33,7 +33,7 @@ Calls to an API take the form outlined below. Each API call returns a promise, t
 
 ```
 var params = {
-    //This is where any header, path, or querystring request params go. The key is the parameter named as defined in the API
+    //This is where path params go.
     userId: '1234',
 };
 // Template syntax follows url-template https://www.npmjs.com/package/url-template
