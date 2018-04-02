@@ -170,7 +170,7 @@ sigV4ClientFactory.newClient = function (config) {
   awsSigV4Client.retries = config.retries;
   awsSigV4Client.retryCondition = config.retryCondition;
 
-  awsSigV4Client.makeRequest = function (request) {
+  awsSigV4Client.makeRequest = function (request, cancelToken) {
     var verb = _utils2.default.assertDefined(request.verb, 'verb');
     var path = _utils2.default.assertDefined(request.path, 'path');
     var queryParams = _utils2.default.copy(request.queryParams);
@@ -235,6 +235,27 @@ sigV4ClientFactory.newClient = function (config) {
       headers: headers,
       data: body
     };
+    if(cancelToken) {
+      var CancelToken = _axios2.default.CancelToken;
+      var CancelSource = CancelToken.source();
+      signedRequest.cancelToken = CancelSource.token;
+
+      if (config.retries !== undefined) {
+        signedRequest.baseURL = url;
+        var client = _axios2.default.create(signedRequest);
+        (0, _axiosRetry2.default)(client, {
+          retries: config.retries,
+          retryCondition: (err) => { // OPTIONAL: Callback to further control if request should be retried.  Uses axon-retry plugin.
+            const correctStatusCode = err.response.status === 500 || err.response.status === 502 || err.response.status === 503 || err.response.status === 504;
+          }
+        });
+        return {request: client.request({ method: verb }), CancelSource: CancelSource};
+      }
+
+      signedRequest.method = verb;
+      signedRequest.url = url;
+      return {request: (0, _axios2.default)(signedRequest), CancelSource: CancelSource};
+    }
     if (config.retries !== undefined) {
       signedRequest.baseURL = url;
       var client = _axios2.default.create(signedRequest);

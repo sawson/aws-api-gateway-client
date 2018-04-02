@@ -42,6 +42,7 @@ apiGatewayClientFactory.newClient = function (simpleHttpClientConfig, sigV4Clien
   apiGatewayClient.makeRequest = function (request, authType, additionalParams, apiKey) {
     // Default the request to use the simple http client
     var clientToUse = simpleHttpClient;
+    var cancelToken = undefined;
 
     // Attach the apiKey to the headers request if one was provided
     if (apiKey !== undefined && apiKey !== '' && apiKey !== null) {
@@ -57,6 +58,10 @@ apiGatewayClientFactory.newClient = function (simpleHttpClientConfig, sigV4Clien
     request.headers = _utils2.default.mergeInto(request.headers, additionalParams.headers);
     request.queryParams = _utils2.default.mergeInto(request.queryParams, additionalParams.queryParams);
 
+    if(additionalParams.cancelToken) {
+      cancelToken = additionalParams.cancelToken;
+    }
+
     // If an auth type was specified inject the appropriate auth client
     if (authType === 'AWS_IAM') {
       clientToUse = sigV4Client;
@@ -64,7 +69,7 @@ apiGatewayClientFactory.newClient = function (simpleHttpClientConfig, sigV4Clien
 
     // Call the selected http client to make the request,
     // returning a promise once the request is sent
-    return clientToUse.makeRequest(request);
+    return clientToUse.makeRequest(request, cancelToken);
   };
   return apiGatewayClient;
 };
