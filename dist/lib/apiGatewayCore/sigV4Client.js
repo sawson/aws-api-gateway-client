@@ -245,9 +245,7 @@ sigV4ClientFactory.newClient = function (config) {
         var client = _axios2.default.create(signedRequest);
         (0, _axiosRetry2.default)(client, {
           retries: config.retries,
-          retryCondition: (err) => { // OPTIONAL: Callback to further control if request should be retried.  Uses axon-retry plugin.
-            const correctStatusCode = err.response.status === 500 || err.response.status === 502 || err.response.status === 503 || err.response.status === 504;
-          }
+          retryCondition: config.retryCondition
         });
         return {request: client.request({ method: verb }), CancelSource: CancelSource};
       }
